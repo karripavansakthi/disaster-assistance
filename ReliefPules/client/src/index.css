@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sidebar-bg: #062B4C;
+  --sidebar-active: #1268E8;
+  --bg-main: #F3F7FC;
+  --bg-card: #FFFFFF;
+  --text-main: #172B4D;
+  --text-muted: #667085;
+  --border-color: #E4EAF2;
+  --primary-blue: #1268E8;
+  --emergency-red: #F52D3D;
+  --success-green: #20A464;
+  --warning-orange: #FF8A1F;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #F3F7FC;
+  color: #172B4D;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Dark Mode Global Styles */
+.dark body {
+  background-color: #070d18;
+  color: #f1f5f9;
+}
+
+.dark .bg-white {
+  background-color: #0d1726 !important;
+  color: #f1f5f9;
+}
+
+.dark .bg-\[\#F3F7FC\] {
+  background-color: #070d18 !important;
+}
+
+.dark .text-\[\#172B4D\] {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-\[\#667085\] {
+  color: #94a3b8 !important;
+}
+
+.dark .border-\[\#E4EAF2\] {
+  border-color: #1e2c42 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/80 {
+  background-color: #0a1320 !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #162438 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: #1e2c42 !important;
+}
+
+.dark .text-slate-700,
+.dark .text-slate-800,
+.dark .text-slate-900 {
+  color: #e2e8f0 !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+.dark .text-slate-400 {
+  color: #64748b !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #0a1320 !important;
+  color: #f1f5f9 !important;
+  border-color: #1e2c42 !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #475569 !important;
+}
+
+.dark tr:hover {
+  background-color: #121e31 !important;
+}
+
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e2c42 !important;
+}
+
+/* Custom card style matching reference */
+.da-card {
+  background-color: #ffffff;
+  border: 1px solid #E4EAF2;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.05);
+}
+
+.dark .da-card {
+  background-color: #0d1726;
+  border-color: #1e2c42;
+}
+
+.da-card-hover {
+  transition: all 0.2s ease-in-out;
+}
+.da-card-hover:hover {
+  box-shadow: 0 4px 12px 0 rgba(16, 24, 40, 0.08);
+  border-color: #CBD5E1;
+}
+
+/* Buttons */
+.btn-emergency {
+  background-color: #F52D3D;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.btn-emergency:hover {
+  background-color: #dc2030;
+}
+
+.btn-primary {
+  background-color: #1268E8;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.btn-primary:hover {
+  background-color: #0d56c4;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0a1320;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Leaflet map custom pins */
+.custom-pin {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  font-size: 11px;
+  font-weight: bold;
+}
+.custom-pin.victim { background-color: #F52D3D; }
+.custom-pin.shelter { background-color: #20A464; }
+.custom-pin.medical { background-color: #1268E8; }
+.custom-pin.rescue { background-color: #06b6d4; }
+
+/* Stacking context & overlay hierarchy */
+.leaflet-container {
+  z-index: 1 !important;
+}
+
+.sos-chatbox-container {
+  z-index: 99999 !important;
+}
+
