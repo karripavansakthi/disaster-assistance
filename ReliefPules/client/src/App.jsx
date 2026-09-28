@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { RealtimeEmergencyProvider } from './context/RealtimeEmergencyContext';
+import LiveDisasterAlertModal from './components/LiveDisasterAlertModal';
 
 // Public & Auth Pages
 import Home from './pages/Home';
@@ -18,6 +20,7 @@ import Resources from './pages/Resources';
 import DisasterAlerts from './pages/DisasterAlerts';
 import MedicalHelp from './pages/MedicalHelp';
 import SafetyAssistant from './pages/SafetyAssistant';
+import LiveTrackerPage from './pages/LiveTrackerPage';
 import MobileBottomNav from './components/MobileBottomNav';
 
 // Victim Pages
@@ -54,7 +57,8 @@ function DashboardRedirect() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <Routes>
+      <RealtimeEmergencyProvider>
+        <Routes>
         {/* Public Pages */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
@@ -72,6 +76,8 @@ export default function App() {
         <Route path="/medical" element={<MedicalHelp />} />
         <Route path="/safety" element={<SafetyAssistant />} />
         <Route path="/alerts" element={<DisasterAlerts />} />
+        <Route path="/tracker" element={<LiveTrackerPage />} />
+        <Route path="/live-tracker" element={<LiveTrackerPage />} />
 
         {/* Smart Dashboard Redirect */}
         <Route path="/dashboard" element={<DashboardRedirect />} />
@@ -89,6 +95,7 @@ export default function App() {
         <Route path="/victim/medical" element={<MedicalHelp />} />
         <Route path="/victim/safety" element={<SafetyAssistant />} />
         <Route path="/victim/alerts" element={<DisasterAlerts />} />
+        <Route path="/victim/tracker" element={<LiveTrackerPage />} />
         <Route path="/victim/history" element={<VictimHistory />} />
         <Route path="/victim/profile" element={<UserProfile />} />
 
@@ -120,6 +127,10 @@ export default function App() {
 
       {/* Global Mobile Bottom Navigation Bar */}
       <MobileBottomNav />
+
+      {/* Real-time Official Disaster Alert High-Priority Modal */}
+      <LiveDisasterAlertModal />
+      </RealtimeEmergencyProvider>
     </ErrorBoundary>
   );
 }

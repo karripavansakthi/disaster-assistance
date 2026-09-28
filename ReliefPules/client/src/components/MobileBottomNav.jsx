@@ -21,6 +21,7 @@ export default function MobileBottomNav() {
 
   const navItems = [
     { label: 'Home', path: '/', icon: Home },
+    { label: 'Live Tracker', path: '/tracker', icon: Radio },
     { label: 'Shelters', path: '/shelters', icon: Tent },
     { label: 'Alerts', path: '/alerts', icon: Radio },
     { label: isAuthenticated ? 'Profile' : 'Login', path: getDashboardPath(), icon: User },

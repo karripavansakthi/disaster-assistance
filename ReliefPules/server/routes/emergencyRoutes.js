@@ -5,18 +5,25 @@ const {
   getEmergencies,
   getMyEmergencies,
   getEmergencyById,
+  trackEmergency,
+  acceptEmergency,
   updateEmergencyStatus,
   getEmergencyStats,
 } = require('../controllers/emergencyController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
+// Public Emergency SOS & Tracking endpoints
+router.get('/track/:id', trackEmergency);
+router.post('/public', createEmergency);
+router.post('/:id/accept', acceptEmergency);
+router.patch('/:id/status', updateEmergencyStatus);
+
 router.post('/', protect, createEmergency);
 router.post('/create', protect, createEmergency);
 router.get('/stats', getEmergencyStats);
-router.get('/all', protect, authorize('admin', 'rescue', 'volunteer', 'coordinator'), getEmergencies);
+router.get('/all', getEmergencies);
 router.get('/my', protect, getMyEmergencies);
-router.get('/', protect, authorize('admin', 'rescue', 'volunteer', 'coordinator'), getEmergencies);
-router.get('/:id', protect, getEmergencyById);
-router.patch('/:id/status', protect, authorize('admin', 'rescue', 'volunteer', 'coordinator'), updateEmergencyStatus);
+router.get('/', getEmergencies);
+router.get('/:id', getEmergencyById);
 
 module.exports = router;

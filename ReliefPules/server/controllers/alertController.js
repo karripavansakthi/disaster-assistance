@@ -55,6 +55,11 @@ const createAlert = async (req, res, next) => {
       issuedBy: issuedBy || 'National Disaster Management Authority (NDMA)',
     });
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('alert.published', alert);
+    }
+
     res.status(201).json({
       success: true,
       message: 'Disaster warning alert broadcasted successfully',

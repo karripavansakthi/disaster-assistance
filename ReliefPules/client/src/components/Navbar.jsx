@@ -20,6 +20,7 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Emergency Help', path: '/emergency' },
+    { label: 'Live Tracker', path: '/tracker', isLive: true },
     { label: 'Shelters', path: '/shelters' },
     { label: 'Medical Help', path: '/medical' },
     { label: 'Resources', path: '/resources' },
@@ -46,13 +47,16 @@ export default function Navbar() {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-[13px] font-semibold transition-colors ${
+                  className={`text-[13px] font-semibold transition-colors inline-flex items-center gap-1.5 ${
                     isActive
-                      ? 'text-[#1268E8] dark:text-blue-400'
+                      ? 'text-[#1268E8] dark:text-blue-400 font-bold'
                       : 'text-[#172B4D] dark:text-slate-300 hover:text-[#1268E8] dark:hover:text-blue-400'
                   }`}
                 >
-                  {link.label}
+                  {link.isLive && (
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  )}
+                  <span>{link.label}</span>
                 </Link>
               );
             })}

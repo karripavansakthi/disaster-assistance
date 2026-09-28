@@ -77,7 +77,7 @@ app.use(
       if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        callback(null, false);
       }
     },
     credentials: true,
@@ -161,7 +161,7 @@ try {
         if (isAllowedOrigin(origin)) {
           callback(null, true);
         } else {
-          callback(new Error(`Origin ${origin} not allowed by CORS`));
+          callback(null, false);
         }
       },
       methods: ['GET', 'POST'],
@@ -180,6 +180,26 @@ try {
     socket.on('join:commandCenter', () => {
       socket.join('commandCenter');
       console.log(`[Socket.IO] ${socket.id} joined command center`);
+    });
+
+    socket.on('join:volunteer', (volunteerId) => {
+      socket.join('volunteers');
+      if (volunteerId) socket.join(`volunteer:${volunteerId}`);
+      console.log(`[Socket.IO] ${socket.id} joined volunteers group`);
+    });
+
+    socket.on('sos:create', (data) => {
+      io.emit('sos.created', data);
+      io.to('commandCenter').emit('sos.created', data);
+    });
+
+    socket.on('sos:update', (data) => {
+      io.emit('sos.updated', data);
+      io.to('commandCenter').emit('sos.updated', data);
+    });
+
+    socket.on('alert:publish', (data) => {
+      io.emit('alert.published', data);
     });
 
     socket.on('disconnect', () => {

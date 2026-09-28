@@ -2,8 +2,17 @@ const mongoose = require('mongoose');
 
 let isConnected = false;
 
+mongoose.connection.on('disconnected', () => {
+  isConnected = false;
+  console.warn('[MongoDB Notice]: Database disconnected.');
+});
+
+mongoose.connection.on('connected', () => {
+  isConnected = true;
+});
+
 const connectDB = async () => {
-  if (isConnected || mongoose.connection.readyState === 1) {
+  if (isConnected && mongoose.connection.readyState === 1) {
     return;
   }
 
@@ -21,6 +30,7 @@ const connectDB = async () => {
     isConnected = true;
     console.log(`[MongoDB Connected] Host: ${conn.connection.host}, Database: ${conn.connection.name}`);
   } catch (error) {
+    isConnected = false;
     console.error(`[MongoDB Connection Error]: ${error.message}`);
   }
 };

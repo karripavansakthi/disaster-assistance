@@ -192,6 +192,32 @@ const getEmergencyById = asyncHandler(async (req, res) => {
   res.json({ success: true, data: emergency });
 });
 
+// @desc Public live tracking of an emergency request by ID or sosId
+// @route GET /api/emergency/track/:id
+// @access Public
+const trackEmergency = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  let emergency;
+
+  if (id.startsWith('RP-') || id.startsWith('REQ') || id.startsWith('req')) {
+    emergency = await EmergencyRequest.findOne({ sosId: { $regex: new RegExp(`^${id}$`, 'i') } });
+  } else if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    emergency = await EmergencyRequest.findById(id);
+  } else {
+    emergency = await EmergencyRequest.findOne({ sosId: { $regex: new RegExp(`^${id}$`, 'i') } });
+  }
+
+  if (!emergency) {
+    res.status(404);
+    throw new Error(`Emergency request #${id} not found.`);
+  }
+
+  res.json({
+    success: true,
+    data: emergency,
+  });
+});
+
 // @desc Update emergency status and assign volunteers
 // @route PATCH /api/emergency/:id/status
 // @access Public / Private
@@ -242,10 +268,76 @@ const updateEmergencyStatus = asyncHandler(async (req, res) => {
 
   const io = req.app.get('io');
   if (io) {
-    io.emit('sos.updated', { sosId: emergency.sosId, status: emergency.status, notes });
+    io.emit('sos.updated', {
+      sosId: emergency.sosId,
+      status: emergency.status,
+      assignedVolunteer: emergency.assignedVolunteer,
+      assignedTeam: emergency.assignedTeam,
+      notes: notes || `Status changed to ${status}`,
+    });
   }
 
   res.json({ success: true, data: emergency });
+});
+
+// @desc Volunteer accepts an emergency request
+// @route POST /api/emergency/:id/accept
+// @access Public / Private
+const acceptEmergency = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { volunteerName, volunteerPhone, volunteerId } = req.body;
+  let emergency;
+
+  if (id.match(/^[0-9a-fA-F]{24}$/)) {
+    emergency = await EmergencyRequest.findById(id);
+  } else {
+    emergency = await EmergencyRequest.findOne({ sosId: { $regex: new RegExp(`^${id}$`, 'i') } });
+  }
+
+  if (!emergency) {
+    res.status(404);
+    throw new Error('Emergency request not found');
+  }
+
+  const assignedLeader = volunteerName || req.user?.name || 'Volunteer Responder';
+  const assignedContact = volunteerPhone || req.user?.phone || '112';
+
+  emergency.status = 'assigned';
+  if (volunteerId || req.user?._id) {
+    emergency.assignedVolunteer = volunteerId || req.user?._id;
+  }
+  emergency.assignedTeam = {
+    teamId: 'Rapid Volunteer Unit',
+    leader: assignedLeader,
+    contact: assignedContact,
+    etaMinutes: 15,
+  };
+
+  emergency.rescueTimeline.push({
+    stage: 'Volunteer Assigned',
+    timestamp: new Date(),
+    notes: `${assignedLeader} accepted the emergency request. En route to location.`,
+    completed: true,
+  });
+
+  await emergency.save();
+
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('sos.updated', {
+      sosId: emergency.sosId,
+      status: 'assigned',
+      assignedVolunteer: assignedLeader,
+      phone: assignedContact,
+      notes: `${assignedLeader} assigned.`,
+    });
+  }
+
+  res.json({
+    success: true,
+    message: 'Emergency request accepted successfully.',
+    data: emergency,
+  });
 });
 
 // @desc Get emergency stats for command center
@@ -299,4 +391,4 @@ const getEmergencyStats = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { createEmergency, getEmergencies, getMyEmergencies, getEmergencyById, updateEmergencyStatus, getEmergencyStats };
+module.exports = { createEmergency, getEmergencies, getMyEmergencies, getEmergencyById, trackEmergency, acceptEmergency, updateEmergencyStatus, getEmergencyStats };

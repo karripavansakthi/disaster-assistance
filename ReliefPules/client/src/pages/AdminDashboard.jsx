@@ -34,9 +34,12 @@ import {
   Clock,
   Sparkles,
   Zap,
-  Building2
+  Building2,
+  Radio,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useRealtimeEmergency } from '../context/RealtimeEmergencyContext';
 
 const toSafeString = (val, fallback = '') => {
   if (typeof val === 'string') return val;
@@ -60,6 +63,16 @@ export default function AdminDashboard() {
   const [simDisasterType, setSimDisasterType] = useState('Cyclone');
   const [simSeverity, setSimSeverity] = useState('High');
   const [filterType, setFilterType] = useState('All');
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertForm, setAlertForm] = useState({
+    title: 'Severe Cyclone Warning',
+    disasterType: 'Cyclone',
+    severity: 'critical',
+    affectedAreas: 'Coastal Area & Ward 7',
+    message: 'Heavy rainfall and strong gale-force winds are expected in your area. Evacuate low-lying zones and seek nearest designated shelter immediately.',
+    issuedBy: 'State Disaster Management Authority (SDMA)',
+  });
+  const { broadcastOfficialAlert } = useRealtimeEmergency();
 
   const refreshState = () => {
     setRequests(getRequests());
@@ -139,7 +152,7 @@ export default function AdminDashboard() {
   const totalBedsAvailable = shelters.reduce((acc, s) => acc + (s.available || (s.capacity - s.occupied) || 0), 0);
   const activeResponders = volunteers.filter((v) => v.status === 'Available' || v.status === 'Assigned').length;
   const filteredRequests = requests.filter(
-    (r) => filterType === 'All' || r.type.toLowerCase() === filterType.toLowerCase()
+    (r) => filterType === 'All' || (toSafeString(r?.type) || '').toLowerCase() === filterType.toLowerCase()
   );
 
   return (
@@ -237,6 +250,16 @@ export default function AdminDashboard() {
                     </button>
                   </>
                 )}
+
+                {/* Broadcast Official Alert Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowAlertModal(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-black shadow-md transition-all hover:scale-105 active:scale-95"
+                >
+                  <Radio className="w-3.5 h-3.5 animate-pulse text-yellow-300" />
+                  <span>Broadcast Alert</span>
+                </button>
               </div>
             </div>
           </div>
@@ -461,6 +484,123 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Official Disaster Alert Broadcast Modal */}
+      {showAlertModal && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white dark:bg-[#0c1524] rounded-3xl max-w-lg w-full p-6 sm:p-7 border-2 border-red-500 shadow-2xl space-y-5 text-slate-900 dark:text-white">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-600 animate-ping" />
+                <h3 className="font-black text-base text-red-600 dark:text-red-400">
+                  Broadcast Official Disaster Alert
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAlertModal(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                broadcastOfficialAlert({
+                  ...alertForm,
+                  affectedAreas: alertForm.affectedAreas.split(',').map((a) => a.trim()),
+                });
+                setShowAlertModal(false);
+                alert('Official warning alert broadcasted to all citizens & volunteers!');
+              }}
+              className="space-y-4 text-xs font-bold"
+            >
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1">Alert Title</label>
+                <input
+                  type="text"
+                  required
+                  value={alertForm.title}
+                  onChange={(e) => setAlertForm({ ...alertForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Disaster Type</label>
+                  <select
+                    value={alertForm.disasterType}
+                    onChange={(e) => setAlertForm({ ...alertForm, disasterType: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                  >
+                    <option value="Cyclone">Cyclone</option>
+                    <option value="Flood">Flood</option>
+                    <option value="Earthquake">Earthquake</option>
+                    <option value="Fire">Fire / Hazmat</option>
+                    <option value="Tsunami">Tsunami</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Severity</label>
+                  <select
+                    value={alertForm.severity}
+                    onChange={(e) => setAlertForm({ ...alertForm, severity: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-red-600 font-bold"
+                  >
+                    <option value="critical">Critical (Immediate Evacuation)</option>
+                    <option value="warning">Warning (High Alert)</option>
+                    <option value="advisory">Advisory (Watch)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1">Affected Areas / Sectors</label>
+                <input
+                  type="text"
+                  required
+                  value={alertForm.affectedAreas}
+                  onChange={(e) => setAlertForm({ ...alertForm, affectedAreas: e.target.value })}
+                  placeholder="e.g. Coastal Area, Ward 7, River Basin"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1">Official Message for Citizens</label>
+                <textarea
+                  rows={3}
+                  required
+                  value={alertForm.message}
+                  onChange={(e) => setAlertForm({ ...alertForm, message: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-medium leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setShowAlertModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black shadow-md flex items-center gap-1.5 transition-transform active:scale-95"
+                >
+                  <Radio className="w-4 h-4 animate-pulse" />
+                  <span>Transmit Broadcast Alert</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
